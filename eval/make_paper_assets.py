@@ -543,10 +543,13 @@ guide = open(os.path.join(R, "real-ablation", "baseline", "annotation-guide.md")
 blk = guide.split("## Persona 1-1")[1].split("## Persona")[0].strip().split("\n")
 sess = [l for l in blk if l.startswith("Session")]
 truth = [l for l in blk if l.startswith("Truth")][0]
-ex = "{\\small\n\\begin{itemize}\\setlength\\itemsep{0pt}\n"
+ex = "{\\small\n\\begin{tabular}{@{}p{0.94\\columnwidth}@{}}\n\\toprule\n\\textbf{What the user says (by session) and the true state at the end} \\\\\n\\midrule\n"
+def row(l):
+    head, _, rest = esc(l.replace('"', "'")).partition(":")
+    return "\\textbf{" + head + ":}" + rest
 for l in sess:
-    ex += "\\item " + esc(l.replace('"', "'")) + "\n"
-ex += "\\item " + esc(truth.replace('"', "'")) + "\n\\end{itemize}}\n"
+    ex += row(l) + " \\\\\n\\addlinespace[2pt]\n"
+ex += "\\midrule\n" + row(truth) + " \\\\\n\\bottomrule\n\\end{tabular}}\n"
 tex("example_persona", ex)
 def memtable(v):
     out = ""
