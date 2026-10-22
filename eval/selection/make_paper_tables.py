@@ -83,7 +83,7 @@ for c in CFG["conditions"]:
     lines.append(LABEL[c] + " & " + " & ".join(f3(byn(N, c)["cr"]) for N in CFG["storeSizes"]) + r" \\")
 lines.append(r"\midrule")
 for key, lab in [("R12_whole_nofloor", "target in top 12, no floor"), ("R24_whole_nofloor", "target in top 24, no floor"),
-                 ("lost_to_floor", "in top 12 but below 0.25"), ("missed_by_all", "missed by all 11 conditions")]:
+                 ("lost_to_floor", "in top 12 but below 0.25"), ("missed_by_all", "missed by every condition")]:
     lines.append(lab + " & " + " & ".join(f3(next(d for d in S["diagnostics"] if d["N"] == N)[key]) for N in CFG["storeSizes"]) + r" \\")
 lines += [r"\bottomrule", r"\end{tabular}"]
 open(os.path.join(PAPER, "tables", "sel_bysize.tex"), "w").write("\n".join(lines) + "\n")
