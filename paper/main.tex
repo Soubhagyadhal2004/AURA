@@ -601,7 +601,7 @@ The evaluation harness (\texttt{eval/}), both persona generators, all raw per-ru
 Table~\ref{tab:apppol} gives all metrics of the policy comparison for all error rates.
 
 \begin{table}[!ht]
-\centering\footnotesize
+\centering\footnotesize\renewcommand{\arraystretch}{0.85}
 \caption{All policies, all extractor error rates (simulated, $u=0.05$; mean per persona).}
 \label{tab:apppol}
 \adjustbox{max width=\linewidth}{\input{tables/app_policies.tex}}
@@ -612,14 +612,14 @@ Table~\ref{tab:apppol} gives all metrics of the policy comparison for all error 
 Tables~\ref{tab:appgate} and~\ref{tab:appauto} give every cell of the simulated ablation. An asterisk marks a sign-test $p<0.05$ against the baseline (uncorrected; 210 tests in all). The upper three blocks vary the extractor error rate ($u=0.05$), the lower four the user slip rate ($e=0.1$; gate only).
 
 \begin{table}[!ht]
-\centering\footnotesize
+\centering\footnotesize\renewcommand{\arraystretch}{0.85}
 \caption{Ablation, gate policy: all cells (60 paired persona runs each). * : uncorrected $p<0.05$.}
 \label{tab:appgate}
 \adjustbox{max width=\linewidth}{\input{tables/app_abl_gate.tex}}
 \end{table}
 
 \begin{table}[!ht]
-\centering\footnotesize
+\centering\footnotesize\renewcommand{\arraystretch}{0.85}
 \caption{Ablation, auto-apply policy: error-rate cells (60 paired persona runs each). * : uncorrected $p<0.05$.}
 \label{tab:appauto}
 \adjustbox{max width=\linewidth}{\input{tables/app_abl_auto.tex}}
@@ -630,7 +630,7 @@ Tables~\ref{tab:appgate} and~\ref{tab:appauto} give every cell of the simulated 
 Table~\ref{tab:modesfull} gives reachability and mean candidate count for all selection modes, store sizes and turn types.
 
 \begin{table}[!ht]
-\centering\footnotesize
+\centering\footnotesize\renewcommand{\arraystretch}{0.85}
 \caption{Reachability (mean number of candidates) by mode, store size $N$ and turn type.}
 \label{tab:modesfull}
 \adjustbox{max width=\linewidth}{\input{tables/modes_full.tex}}
@@ -641,7 +641,7 @@ Table~\ref{tab:modesfull} gives reachability and mean candidate count for all se
 Table~\ref{tab:selsize} gives reachability for every condition of the selection study and every store size, with the retrieval diagnostics of Sec.~\ref{sec:selection}.
 
 \begin{table}[!ht]
-\centering\footnotesize
+\centering\footnotesize\renewcommand{\arraystretch}{0.85}
 \caption{Selection study: reachability by condition and store size $N$, and diagnostics (\selEventsTotal\ change events per store size).}
 \label{tab:selsize}
 \adjustbox{max width=\linewidth}{\input{tables/sel_bysize.tex}}
