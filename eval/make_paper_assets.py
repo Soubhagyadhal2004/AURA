@@ -347,10 +347,14 @@ with open(os.path.join(OUT, "numbers.tex"), "w", encoding="utf-8") as f:
 # ---------------------------------------------------------------- figures
 C = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100"]
 INK, INK2, GRID = "#0b0b0b", "#52514e", "#e4e3df"
-plt.rcParams.update({"font.family": "serif", "font.serif": ["Times New Roman", "Times", "STIXGeneral", "DejaVu Serif"],
-                     "mathtext.fontset": "stix", "font.size": 8, "axes.titlesize": 8.5, "axes.labelsize": 8,
-                     "xtick.labelsize": 7.5, "ytick.labelsize": 7.5, "legend.fontsize": 7, "axes.edgecolor": INK2,
-                     "axes.linewidth": 0.6, "savefig.dpi": 300})
+plt.rcParams.update({
+    "font.family": "serif", "font.serif": ["Times New Roman", "Liberation Serif", "Times"],
+    "mathtext.fontset": "custom", "mathtext.rm": "Liberation Serif", "mathtext.it": "Liberation Serif:italic", "mathtext.bf": "Liberation Serif:bold", "mathtext.cal": "Liberation Serif", "mathtext.sf": "Liberation Serif", "mathtext.tt": "Liberation Serif",
+    "pdf.fonttype": 42, "ps.fonttype": 42, "font.size": 10, "axes.titlesize": 10, "axes.labelsize": 10,
+    "xtick.labelsize": 10, "ytick.labelsize": 10, "legend.fontsize": 10, "axes.linewidth": 0.8,
+    "lines.linewidth": 1.6, "xtick.major.width": 0.8, "ytick.major.width": 0.8, "savefig.dpi": 600,
+    "axes.edgecolor": INK2,
+})
 
 
 def style(ax):
@@ -361,7 +365,7 @@ def style(ax):
 
 
 def save(fig, name):
-    for ext in ("pdf", "png"):
+    for ext in ("pdf", "png", "tiff"):
         fig.savefig(os.path.join(OUT, "figures", f"{name}.{ext}"), bbox_inches="tight")
     plt.close(fig)
 
@@ -375,7 +379,7 @@ def boot_ci(vals, B=4000, seed=7):
 
 
 # Fig. 6: real Gemini, gate policy: F1 and stale facts per variant, two models (per-persona dots + mean)
-fig, axes = plt.subplots(1, 2, figsize=(7.16, 2.4))
+fig, axes = plt.subplots(1, 2, figsize=(7.0, 3.4))
 marks = ["o", "s", "^", "D"]
 for ax, (metric, ylab, title) in zip(axes, (("f1", "F1 of the final memory", "(a) Accuracy"), ("stale", "stale facts / persona", "(b) Updates that were missed"))):
     for mi, (runs, vs, col, shift, lab) in enumerate(((runs1, V4, C[0], -0.12, "gemini-3.5-flash-lite"),
@@ -385,8 +389,8 @@ for ax, (metric, ylab, title) in zip(axes, (("f1", "F1 of the final memory", "(a
             vals = [r[metric] for r in runs[v] if r["policy"] == "gate"]
             lo_, hi_ = boot_ci(vals)
             xs.append(V4.index(v) + shift); ms.append(mean(vals)); los.append(mean(vals) - lo_); his.append(hi_ - mean(vals))
-        ax.errorbar(xs, ms, yerr=[los, his], color=col, marker=marks[mi], markersize=5, linestyle="--" if mi else "-",
-                    linewidth=1.3, capsize=2, elinewidth=0.8, markeredgecolor="white", markeredgewidth=0.6, label=lab)
+        ax.errorbar(xs, ms, yerr=[los, his], color=col, marker=marks[mi], markersize=6, linestyle="-",
+                    linewidth=1.6, capsize=2.5, elinewidth=0.9, markeredgecolor="white", markeredgewidth=0.6, label=lab)
     ax.set_xticks(range(4)); ax.set_xticklabels(L4)
     ax.set_ylabel(ylab); ax.set_title(title, loc="left", color=INK)
     if metric == "stale":
@@ -397,7 +401,7 @@ fig.tight_layout(w_pad=1.5)
 save(fig, "fig6_real")
 
 # Fig. 7: LongMemEval accuracy per system, baseline vs F1+F2
-fig, ax = plt.subplots(figsize=(3.5, 2.3))
+fig, ax = plt.subplots(figsize=(4.6, 3.4))
 w = 0.38
 for k, (runs, col, lab, hatch) in enumerate(((lb, C[0], "baseline", ""), (lo, C[1], "F1+F2", "//"))):
     ys, cil, cih = [], [], []
@@ -407,11 +411,12 @@ for k, (runs, col, lab, hatch) in enumerate(((lb, C[0], "baseline", ""), (lo, C[
         se = 1.96 * math.sqrt(m * (1 - m) / len(vals))
         ys.append(m); cil.append(min(se, m)); cih.append(min(se, 1 - m))
     ax.bar([i + (k - 0.5) * w for i in range(len(SYS))], ys, w, yerr=[cil, cih], color=col, hatch=hatch, edgecolor="white",
-           label=lab, capsize=1.5, error_kw={"elinewidth": 0.7})
+           label=lab, capsize=2.5, error_kw={"elinewidth": 0.9})
 ax.set_xticks(range(len(SYS)))
 ax.set_xticklabels(["no\nmemory", "full\ncontext", "append", "auto", "gate"])
 ax.set_ylabel("answers judged correct")
-ax.set_ylim(0, 1)
+ax.set_ylim(0, 1.12)
+ax.set_yticks([0, 0.2, 0.4, 0.6, 0.8, 1.0])
 style(ax)
 ax.legend(frameon=False, loc="upper left", labelcolor=INK, ncol=2)
 fig.tight_layout()
@@ -604,13 +609,13 @@ for pol in ("gate", "auto"):
     tex(f"app_abl_{pol}", body)
 
 # ---- figure 8: reachability by fact type (N = 350, single sentence)
-fig, ax = plt.subplots(figsize=(7.16, 2.3))
+fig, ax = plt.subplots(figsize=(7.0, 3.6))
 keys = [k for k, _ in SLOTS if k in slotrows]
 labs = dict(SLOTS)
 w = 0.2
 for i, (m, mlab, col) in enumerate(zip(MODES, ("default", "no minimum", "sentence", "adaptive (F2)"), (C[1], C[0], C[3], C[2]))):
     ax.bar([j + (i - 1.5) * w for j in range(len(keys))], [slotrows[k][i] for k in keys], w, color=col, label=mlab, edgecolor="white", hatch=("", "//", "..", "xx")[i])
-ax.set_xticks(range(len(keys))); ax.set_xticklabels([labs[k] for k in keys], rotation=0)
+ax.set_xticks(range(len(keys))); ax.set_xticklabels([labs[k] for k in keys], rotation=35, ha="right")
 ax.set_ylabel("change target shown"); ax.set_ylim(0, 1.05)
 style(ax); ax.legend(frameon=False, ncol=4, loc="upper center", bbox_to_anchor=(0.5, 1.18), labelcolor=INK)
 fig.tight_layout(); save(fig, "fig8_slots")

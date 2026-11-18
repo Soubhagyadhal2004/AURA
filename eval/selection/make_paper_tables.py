@@ -152,44 +152,53 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-plt.rcParams.update({"font.size": 8, "font.family": "serif", "axes.spines.top": False, "axes.spines.right": False})
+plt.rcParams.update({
+    "font.family": "serif", "font.serif": ["Times New Roman", "Liberation Serif", "Times"],
+    "mathtext.fontset": "custom", "mathtext.rm": "Liberation Serif", "mathtext.it": "Liberation Serif:italic", "mathtext.bf": "Liberation Serif:bold", "mathtext.cal": "Liberation Serif", "mathtext.sf": "Liberation Serif", "mathtext.tt": "Liberation Serif",
+    "pdf.fonttype": 42, "ps.fonttype": 42, "font.size": 10, "axes.titlesize": 10, "axes.labelsize": 10,
+    "xtick.labelsize": 10, "ytick.labelsize": 10, "legend.fontsize": 10, "axes.linewidth": 0.8,
+    "lines.linewidth": 1.6, "xtick.major.width": 0.8, "ytick.major.width": 0.8, "savefig.dpi": 600,
+    "axes.spines.top": False, "axes.spines.right": False})
 COL = {"default": "#2a78d6", "nomin": "#eb6834", "sentence": "#1baf7a", "adaptive": "#eda100", "nomin_k24": "#e87ba4"}
 MK = {"default": "o", "nomin": "s", "sentence": "^", "adaptive": "D", "nomin_k24": "v"}
-fig, ax = plt.subplots(1, 2, figsize=(7.0, 2.6))
+fig, ax = plt.subplots(2, 1, figsize=(7.0, 8.2), gridspec_kw={"height_ratios": [1, 1.45]})
 Ns = CFG["storeSizes"]
 for c in COL:
     ys = [byn(N, c)["cr"] for N in Ns]
     lo = [byn(N, c)["lo"] for N in Ns]
     hi = [byn(N, c)["hi"] for N in Ns]
-    ax[0].plot(Ns, ys, color=COL[c], marker=MK[c], ms=4, lw=1.6, label=LABEL[c].replace("$k{=}24$", "k=24"))
+    ax[0].plot(Ns, ys, color=COL[c], marker=MK[c], ms=5, lw=1.8, label=LABEL[c].replace("$k{=}24$", "k=24"))
     ax[0].fill_between(Ns, lo, hi, color=COL[c], alpha=0.15, lw=0)
 ax[0].set_xlabel("unrelated memories in the store $N$")
 ax[0].set_ylabel("target in the extractor's prompt")
-ax[0].set_title("(a) Reachability by store size", fontsize=8)
+ax[0].set_title("(a) Reachability by store size", fontsize=10)
 ax[0].set_ylim(0.40, 1.01)
 ax[0].grid(axis="y", color="#e5e5e5", lw=0.6)
-ax[0].legend(frameon=False, fontsize=6.5, loc="lower right", ncol=2)
+ax[0].legend(frameon=False, fontsize=10, loc="lower right", ncol=2)
 for c in CFG["conditions"]:
     d = byn(MAIN, c)
     color = COL.get(c, "#8a8a8a")
     mk = MK.get(c, "x" if ROLE.get(c) in ("lexical", "fused") else "o")
     ax[1].errorbar(d["ncand"], d["cr"], yerr=[[d["cr"] - d["lo"]], [d["hi"] - d["cr"]]], fmt=mk, color=color, ms=5 if c in COL else 4, capsize=0, lw=1)
-    off = {"default": (4, -10), "default_k24": (4, 2), "cue_k": (4, -9), "nomin": (6, -3), "sentence": (-14, -13), "sent_cue_k": (-30, 7),
-           "sent_nomin": (-6, 6), "adaptive": (-34, 6), "nomin_cue_k": (4, -10), "nomin_k24": (-62, -1), "sent_nomin_k24": (-108, 4),
+    off = {"default": (8, -21), "default_k24": (8, 8), "cue_k": (9, -6), "nomin": (6, -3), "sentence": (-9, -3), "sent_cue_k": (0, 12),
+           "sent_nomin": (-9, 8), "adaptive": (-12, 3), "nomin_cue_k": (4, -10), "nomin_k24": (-62, -1), "sent_nomin_k24": (-108, 4),
            "rrf_k24": (-72, -11), "sent_rrf_k24": (5, -1), "bm25_k12": (-14, -12), "bm25_k24": (5, -4)}.get(c, (4, 2))
     lab = LABEL[c].replace("{=}", "=").replace("$", "")
     right = {"sent_nomin_k24": 0.886, "sent_rrf_k24": 0.868, "nomin_k24": 0.850, "rrf_k24": 0.832}
     if c in right:
-        ax[1].annotate(lab, (d["ncand"], d["cr"]), xytext=(33.2, right[c]), textcoords="data", fontsize=5.6, color="#333333", va="center",
+        ax[1].annotate(lab, (d["ncand"], d["cr"]), xytext=(33.2, right[c]), textcoords="data", fontsize=10, color="#333333", va="center",
                        arrowprops=dict(arrowstyle="-", color="#9a9a9a", lw=0.5))
     else:
-        ax[1].annotate(lab, (d["ncand"], d["cr"]), textcoords="offset points", xytext=off, fontsize=5.6, color="#333333")
+        if c == "sent_cue_k":
+            lab = "per sentence +\nk=24 on cue"
+        ax[1].annotate(lab, (d["ncand"], d["cr"]), textcoords="offset points", xytext=off, fontsize=10, color="#333333",
+                       ha={"sent_cue_k": "center", "sent_nomin": "right", "sentence": "right", "adaptive": "right"}.get(c, "left"), va="bottom" if c == "sent_cue_k" else "baseline")
 ax[1].set_xlabel(f"mean candidates shown ($N={MAIN}$)")
-ax[1].set_xlim(11, 45)
+ax[1].set_xlim(8.5, 45)
 ax[1].set_ylabel("target in the extractor's prompt")
-ax[1].set_title("(b) Reachability against candidates shown (x: BM25 / fused)", fontsize=8)
+ax[1].set_title("(b) Reachability against candidates shown (x: BM25 / fused)", fontsize=10)
 ax[1].grid(color="#e5e5e5", lw=0.6)
 fig.tight_layout()
-fig.savefig(os.path.join(PAPER, "figures", "fig9_selection.pdf"))
-fig.savefig(os.path.join(PAPER, "figures", "fig9_selection.png"), dpi=200)
+for _e in ("pdf", "png", "tiff"):
+    fig.savefig(os.path.join(PAPER, "figures", "fig9_selection." + _e), dpi=600)
 print("written")
