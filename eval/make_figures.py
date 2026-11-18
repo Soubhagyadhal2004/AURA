@@ -28,30 +28,20 @@ RUNS = {
 C = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100"]
 INK, INK2, GRID, SURFACE = "#0b0b0b", "#52514e", "#e4e3df", "#fcfcfb"
 POLICY = {  # label, colour, marker, line style
-    "append": ("append-only", C[0], "s", (0, (1, 1.5))),
+    "append": ("append-only", C[0], "s", "-"),
     "auto": ("auto-apply", C[1], "o", "-"),
-    "gate": ("gate changes (AURA)", C[2], "^", "--"),
-    "gateAll": ("gate all", C[3], "D", "-."),
+    "gate": ("gate changes (AURA)", C[2], "^", "-"),
+    "gateAll": ("gate all", C[3], "D", "-"),
 }
 
 plt.rcParams.update({
-    "font.family": "serif",
-    "font.serif": ["Times New Roman", "Times", "STIXGeneral", "DejaVu Serif"],
-    "mathtext.fontset": "stix",
-    "font.size": 8,
-    "axes.titlesize": 8.5,
-    "axes.labelsize": 8,
-    "xtick.labelsize": 7.5,
-    "ytick.labelsize": 7.5,
-    "legend.fontsize": 7,
-    "axes.edgecolor": INK2,
-    "axes.labelcolor": INK,
-    "xtick.color": INK2,
-    "ytick.color": INK2,
-    "axes.linewidth": 0.6,
-    "figure.facecolor": "white",
-    "axes.facecolor": "white",
-    "savefig.dpi": 300,
+    "font.family": "serif", "font.serif": ["Times New Roman", "Liberation Serif", "Times"],
+    "mathtext.fontset": "custom", "mathtext.rm": "Liberation Serif", "mathtext.it": "Liberation Serif:italic", "mathtext.bf": "Liberation Serif:bold", "mathtext.cal": "Liberation Serif", "mathtext.sf": "Liberation Serif", "mathtext.tt": "Liberation Serif",
+    "pdf.fonttype": 42, "ps.fonttype": 42, "font.size": 10, "axes.titlesize": 10, "axes.labelsize": 10,
+    "xtick.labelsize": 10, "ytick.labelsize": 10, "legend.fontsize": 10, "axes.linewidth": 0.8,
+    "lines.linewidth": 1.6, "xtick.major.width": 0.8, "ytick.major.width": 0.8, "savefig.dpi": 600,
+    "axes.edgecolor": INK2, "axes.labelcolor": INK, "xtick.color": INK2, "ytick.color": INK2,
+    "figure.facecolor": "white", "axes.facecolor": "white",
 })
 
 
@@ -68,7 +58,7 @@ def style(ax):
 
 
 def save(fig, out, name):
-    for ext in ("pdf", "png"):
+    for ext in ("pdf", "png", "tiff"):
         fig.savefig(os.path.join(out, f"{name}.{ext}"), bbox_inches="tight")
     plt.close(fig)
     print("wrote", name)
@@ -78,11 +68,11 @@ def fig_policies(out):
     """Fig. 1: F1, true facts destroyed, review prompts vs. extractor error rate."""
     rows = [r for r in read(os.path.join(RUNS["gate"], "summary.csv")) if r["sweep"] == "error"]
     es = sorted({float(r["e"]) for r in rows})
-    fig, axes = plt.subplots(1, 3, figsize=(7.16, 2.15))
+    fig, axes = plt.subplots(1, 3, figsize=(7.0, 3.2))
     panels = [
-        ("f1_mean", "f1_ci95", "F1 of the final memory", "(a) Memory accuracy"),
-        ("destroyed", None, "true facts destroyed / persona", "(b) Wrong changes that got through"),
-        ("promptsPer100Turns_mean", "promptsPer100Turns_ci95", "review prompts / 100 turns", "(c) User burden"),
+        ("f1_mean", "f1_ci95", "F1 of the final memory", "(a) Memory\naccuracy"),
+        ("destroyed", None, "true facts destroyed\nper persona", "(b) Wrong changes\nthat got through"),
+        ("promptsPer100Turns_mean", "promptsPer100Turns_ci95", "review prompts\nper 100 turns", "(c) User\nburden"),
     ]
     for ax, (key, ci, ylabel, title) in zip(axes, panels):
         for p, (label, col, mk, ls) in POLICY.items():
@@ -91,7 +81,7 @@ def fig_policies(out):
                 ys = [float(r["destroyed_mean"]) + float(r["fillerLost_mean"]) for r in sel]
             else:
                 ys = [float(r[key]) for r in sel]
-            ax.plot(es, ys, color=col, marker=mk, markersize=4, linestyle=ls, linewidth=1.4, label=label,
+            ax.plot(es, ys, color=col, marker=mk, markersize=5, linestyle=ls, linewidth=1.6, label=label,
                     markeredgecolor="white", markeredgewidth=0.6)
             if ci:
                 lo = [y - float(r[ci]) for y, r in zip(ys, sel)]
@@ -100,14 +90,14 @@ def fig_policies(out):
         ax.set_xlabel("extractor error rate $e$")
         ax.set_ylabel(ylabel)
         ax.set_title(title, loc="left", color=INK)
-        ax.set_xticks(es)
+        ax.set_xticks([0, 0.1, 0.2, 0.3])
         style(ax)
     axes[0].set_ylim(0.45, 1.0)
     axes[1].set_ylim(bottom=0)
     axes[2].set_ylim(bottom=0)
     handles, labels = axes[0].get_legend_handles_labels()
-    fig.legend(handles, labels, loc="upper center", ncol=4, frameon=False, bbox_to_anchor=(0.5, 1.08), labelcolor=INK)
-    fig.tight_layout(w_pad=1.2)
+    fig.legend(handles, labels, loc="upper center", ncol=2, frameon=False, bbox_to_anchor=(0.5, 1.12), labelcolor=INK)
+    fig.tight_layout(w_pad=1.0)
     save(fig, out, "fig1_policies")
 
 
@@ -116,23 +106,23 @@ def fig_fix(out):
     base = [r for r in read(os.path.join(RUNS["gate"], "summary.csv")) if r["sweep"] == "error"]
     fix = [r for r in read(os.path.join(RUNS["gate_fix"], "summary.csv")) if r["sweep"] == "error"]
     es = sorted({float(r["e"]) for r in base})
-    fig, ax = plt.subplots(figsize=(3.5, 2.3))
+    fig, ax = plt.subplots(figsize=(4.6, 3.3))
     for p, col, mk in (("auto", C[1], "o"), ("gate", C[2], "^")):
-        for rows, ls, tag in ((base, "--", "as shipped"), (fix, "-", "no min. score")):
+        for rows, ls, tag in ((base, "-", "as shipped"), (fix, "-", "no min. score")):
             sel = sorted((r for r in rows if r["policy"] == p), key=lambda r: float(r["e"]))
             ys = [float(r["stale_mean"]) for r in sel]
             ci = [float(r["stale_ci95"]) for r in sel]
-            ax.errorbar(es, ys, yerr=ci, color=col, marker=mk, markersize=4, linestyle=ls, linewidth=1.3, capsize=2,
-                        elinewidth=0.7, markeredgecolor="white", markeredgewidth=0.6, label=f"{POLICY[p][0]}, {tag}")
-            ax.annotate(f"{POLICY[p][0].split(' (')[0]}, {tag}", (es[-1], ys[-1]), xytext=(4, 0), textcoords="offset points",
-                        va="center", fontsize=6.5, color=INK2)
+            hollow = tag == "as shipped"
+            ax.errorbar(es, ys, yerr=ci, color=col, marker=mk, markersize=6, linestyle=ls, linewidth=1.6, capsize=2.5,
+                        elinewidth=0.9, markeredgecolor=col, markeredgewidth=1.2, markerfacecolor="white" if hollow else col,
+                        label=f"{POLICY[p][0].split(' (')[0]}, {tag}")
     ax.set_xlabel("extractor error rate $e$")
-    ax.set_ylabel("stale facts still active / persona")
+    ax.set_ylabel("stale facts still active\nper persona")
     ax.set_xticks(es)
-    ax.set_xlim(es[0] - 0.01, es[-1] + 0.16)
-    ax.set_ylim(bottom=0)
+    ax.set_xlim(es[0] - 0.01, es[-1] + 0.02)
+    ax.set_ylim(0, 3.5)
     style(ax)
-    # every line carries a direct label at its end; colour = policy, dashed = as shipped, solid = no minimum score
+    ax.legend(frameon=False, loc="upper left", labelcolor=INK)   # colour = policy, hollow marker = as shipped, filled = no minimum score
     fig.tight_layout()
     save(fig, out, "fig2_candidate_fix")
 
@@ -142,17 +132,17 @@ def fig_reach(out):
     rows = [r for r in read(os.path.join(RUNS["reach"], "summary.csv")) if r["kind"] == "all"]
     rows.sort(key=lambda r: float(r["size"]))
     ns = [float(r["size"]) for r in rows]
-    fig, ax = plt.subplots(figsize=(3.5, 2.2))
+    fig, ax = plt.subplots(figsize=(4.6, 3.3))
     series = (
-        ("reachable", "lo", "hi", "AURA (search min. score 0.25)", C[1], "o", "--"),
+        ("reachable", "lo", "hi", "AURA (search min. score 0.25)", C[1], "o", "-"),
         ("reachableNoMin", "lo2", "hi2", "12 best matches, no minimum", C[0], "s", "-"),
     )
     for key, lo, hi, label, col, mk, ls in series:
         ys = [float(r[key]) for r in rows]
-        ax.plot(ns, ys, color=col, marker=mk, markersize=4, linestyle=ls, linewidth=1.4, label=label,
+        ax.plot(ns, ys, color=col, marker=mk, markersize=5, linestyle=ls, linewidth=1.6, label=label,
                 markeredgecolor="white", markeredgewidth=0.6)
         ax.fill_between(ns, [float(r[lo]) for r in rows], [float(r[hi]) for r in rows], color=col, alpha=0.15, linewidth=0)
-        ax.annotate(f"{ys[-1]:.2f}", (ns[-1], ys[-1]), xytext=(4, 0), textcoords="offset points", va="center", fontsize=7, color=INK)
+        ax.annotate(f"{ys[-1]:.2f}", (ns[-1], ys[-1]), xytext=(4, 0), textcoords="offset points", va="center", fontsize=10, color=INK)
     ax.set_xlabel("unrelated memories in the store $N$")
     ax.set_ylabel("change target shown to extractor")
     ax.set_ylim(0.5, 1.02)
@@ -167,14 +157,14 @@ def fig_threshold(out):
     """Fig. 4: retrieval trade-off of the minimum score: found (stored facts) vs. noise (never-stated questions)."""
     rows = read(os.path.join(RUNS["retrieval"], "threshold.csv"))
     sizes = sorted({float(r["size"]) for r in rows})
-    fig, ax = plt.subplots(figsize=(3.5, 2.4))
+    fig, ax = plt.subplots(figsize=(4.6, 3.6))
     marks = ["o", "s", "^"]
-    styles = ["-", "--", "-."]
+    styles = ["-", "-", "-"]
     for i, n in enumerate(sizes):
         sel = sorted((r for r in rows if float(r["size"]) == n), key=lambda r: float(r["threshold"]))
         xs = [float(r["noise"]) for r in sel]
         ys = [float(r["found"]) for r in sel]
-        ax.plot(xs, ys, color=C[i], marker=marks[i], markersize=4, linestyle=styles[i], linewidth=1.3,
+        ax.plot(xs, ys, color=C[i], marker=marks[i], markersize=5, linestyle=styles[i], linewidth=1.6,
                 label=f"$N$ = {int(n)}", markeredgecolor="white", markeredgewidth=0.6)
         for r, x, y in zip(sel, xs, ys):
             t = float(r["threshold"])
@@ -182,14 +172,14 @@ def fig_threshold(out):
                 ax.scatter([x], [y], s=55, facecolors="none", edgecolors=INK, linewidths=0.8, zorder=5)
             if i == len(sizes) - 1:
                 # the points for 0 and 0.1 are close together: put the 0 label to the right of its point
-                ax.annotate(f"{t:g}", (x, y), xytext=(5, -2) if t == 0 else (3, -8), textcoords="offset points", fontsize=6, color=INK2)
+                ax.annotate(f"{t:g}", (x, y), xytext={0: (6, 5), 0.1: (-8, -17)}.get(t, (3, -14)), textcoords="offset points", fontsize=10, color=INK2)
     ax.set_xlabel("noise: never-stated questions that return memories")
     ax.set_ylabel("found: right fact in top 6")
     ax.set_xlim(-0.02, 1.07)
     ax.set_ylim(0.45, 1.02)
     style(ax)
     ax.legend(frameon=False, loc="lower center", bbox_to_anchor=(0.5, 1.0), ncol=3, labelcolor=INK)
-    ax.text(0.99, 0.03, "numbers: minimum score ($N$ = 350); circled: AURA's 0.25", transform=ax.transAxes, ha="right", va="bottom", fontsize=6.3, color=INK2)
+    ax.text(0.99, 0.03, "numbers: minimum score ($N$ = 350)\ncircled: AURA's 0.25", transform=ax.transAxes, ha="right", va="bottom", fontsize=10, color=INK2)
     fig.tight_layout()
     save(fig, out, "fig4_threshold_tradeoff")
 
@@ -206,15 +196,15 @@ def fig_ablation(out):
             if r["sweep"] == "error" and r["policy"] == "gate":
                 data[(d, float(r["e"]))] = r
     es = sorted({e for (_, e) in data})
-    marks, styles = ["o", "s", "^", "D"], ["-", "--", "-.", ":"]
-    fig, axes = plt.subplots(1, 2, figsize=(6.6, 2.6))
+    marks, styles = ["o", "s", "^", "D"], ["-", "-", "-", "-"]
+    fig, axes = plt.subplots(1, 2, figsize=(7.0, 3.4))
     for ax, key, lab in ((axes[0], "stale", "stale facts per persona"), (axes[1], "promptsPer100Turns", "review prompts per 100 turns")):
         for i, (d, nm) in enumerate(names):
             ys = [float(data[(d, e)][key + "_mean"]) for e in es]
             cs = [float(data[(d, e)][key + "_ci95"]) for e in es]
-            ax.errorbar(es, ys, yerr=cs, color=C[i], marker=marks[i], linestyle=styles[i], linewidth=1.2, markersize=4, capsize=2, label=nm)
+            ax.errorbar(es, ys, yerr=cs, color=C[i], marker=marks[i], linestyle=styles[i], linewidth=1.6, markersize=5, capsize=2.5, label=nm)
         ax.set_xlabel("extractor error rate $e$")
-        ax.set_ylabel(lab)
+        ax.set_ylabel(lab.replace(" per ", "\nper "))
         ax.set_xticks(es)
         style(ax)
     axes[1].legend(frameon=False, loc="lower right", labelcolor=INK)
